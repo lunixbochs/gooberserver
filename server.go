@@ -37,8 +37,7 @@ func (s *Server) ListenAndServe(addr string) error {
 			}
 			addClient <- &TCPClient{
 				conn: conn, server: s,
-				acl:     AclFlags{AclEveryone, AclUnauthed},
-				onClose: remClient,
+				acl: AclFlags{AclEveryone, AclUnauthed},
 			}
 		}
 	}()
@@ -46,6 +45,7 @@ func (s *Server) ListenAndServe(addr string) error {
 		select {
 		case client := <-addClient:
 			s.Clients[client] = true
+			go client.Pump(remClient)
 		case client := <-remClient:
 			delete(s.Clients, client)
 		}
